@@ -77,7 +77,7 @@ export const getNotes = async (req, res) => {
 export const CreateNote = async (req, res) => {
     try {
         const Note = req.body
-        if (!Note.name || !Note.noteDescription || !Note.Status || !Note.priority) {
+        if (!Note.title || !Note.noteDescription || !Note.Status || !Note.priority) {
             req.status(401).json({ message: "All field must filled !!" })
         }
         const NewNote = await Notes(Note)
@@ -123,14 +123,14 @@ export const DeleteNote = async (req, res) => {
 }
 
 export const SearchNote = async (req, res)=> {
-    const { name } = req.query
+    const { title } = req.query
     try {
-        if (!name) {
-            return res.status(400).json({ message: "Please provide a name to search" });
+        if (!title) {
+            return res.status(400).json({ message: "Please provide a title to search" });
           }
 
           const Note = await Notes.find({
-            name: { $regex: name, $options: "i" } // "i" for case-insensitive
+            title: { $regex: title, $options: "i" } // "i" for case-insensitive
           });
       
           if (Note.length === 0) {

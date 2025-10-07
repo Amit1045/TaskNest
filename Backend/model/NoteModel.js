@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 
 const NotesSchema = new mongoose.Schema({
-    name: {
+    title: {
         type: String,
         required: true
     },
     Status: {
         type: String,
-        enum: ["Active", "Complete"],
+        enum: ["Active","Pending" ,"Completed"],
         default: "Active",
        
     },

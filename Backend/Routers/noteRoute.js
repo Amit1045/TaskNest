@@ -4,8 +4,8 @@ import { verifyToken } from "../middleware/Authmiddleware.js"
 
 const router=express.Router()
 
-router.get("/",verifyToken,getNotes)
-router.post("/create",verifyToken,CreateNote)
+router.get("/",getNotes)
+router.post("/create",CreateNote)
 router.put("/edit/:id",verifyToken,EditNote)
 router.delete("/delete/:id",verifyToken,DeleteNote)
 router.get("/search",SearchNote)
