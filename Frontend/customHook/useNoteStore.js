@@ -4,6 +4,10 @@ export const useNoteStore = create((set) => ({
     notes: [],
     loading: false,
     error: null,
+    filters: {
+        status: [],
+        priority: []
+      },
 
     fetchNotes: async () => {
         set({ loading: true, error: null })
@@ -35,13 +39,13 @@ export const useNoteStore = create((set) => ({
                     priority: formData.priority,
                   }),
             });
-            const result = await res.json()
-            if (result.success === 'true') {
+            const response = await res.json()
+            if (response.success === true) {
                 //there is the logic to add another notes in the cards
-                set((state) => ({ notes: [...state.notes, result.data] }));
+                set((state) => ({ notes: [...state.notes, response.data] }));
                 return { success: true, message: "Note created successfully!" }
             } else {
-                set({ error: "Failed to Create Note" })
+                set({ success:false ,error: "Failed to Create Note" })
             }
         } catch (error) {
             console.error("API Error:", error.response ? error.response.data : error.message);
@@ -51,5 +55,7 @@ export const useNoteStore = create((set) => ({
                 return { success: false, message: "Something went wrong." };
             }
         }
-    }
+    },
+
+   
 }))

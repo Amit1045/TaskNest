@@ -53,10 +53,9 @@ const CreateNote = () => {
             return;
         }
         setIsSubmitting(true);
-
         // 2. Submit to (Simulated) Backend
            const response = await createEntity(formData);
-         
+           
         // 3. Handle Server Response
         if (response.success) {
             setSubmissionStatus('success');

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect, useRef } from 'react';
 import { MdSettings } from "react-icons/md";
 import { Link } from 'react-router-dom';
 
@@ -17,6 +17,16 @@ const handleLogout = () => {
 
 const Navbar = ({ title = 'NoteMe', onMenuToggle}) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const navRef=useRef()
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (navRef.current && !navRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header
@@ -61,7 +71,7 @@ const Navbar = ({ title = 'NoteMe', onMenuToggle}) => {
               &#9662;
             </span>
           </button>
-
+          <div ref={navRef}>
           {isProfileMenuOpen && (
             <div
               className="absolute z-50 right-0 w-48 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-lg shadow-xl"
@@ -94,6 +104,7 @@ const Navbar = ({ title = 'NoteMe', onMenuToggle}) => {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
     </header>

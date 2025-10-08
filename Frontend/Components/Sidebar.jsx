@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 function Sidebar() {
   const navItems = [
@@ -42,7 +41,7 @@ function Sidebar() {
       <div
         className={`absolute bottom-4 left-0 w-full px-4 text-center text-sm text-gray-400 transition-all duration-300`}
       >
-        Jane Doe (Online)
+       Amit Yadav (Online)
       </div>
     </div>
   );
