@@ -22,7 +22,16 @@ const getStatusColor = (status) => {
 };
 
 /* ---------------------------- Dropdown Menu ----------------------------- */
-const CardMenu = ({ onEdit, onDuplicate, onDelete }) => (
+const CardMenu = ({ onEdit, onDuplicate,entity }) =>{
+  const DeleteEntity = useNoteStore((state) => state.DeleteEntity);
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this note?");
+    if (!confirmDelete) return;
+
+    const res = await DeleteEntity(entity._id);
+    alert(res.message);
+  };
+  return(
   <div
     className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg ring-1 ring-gray-200 divide-y divide-gray-100 z-50"
     role="menu"
@@ -43,7 +52,7 @@ const CardMenu = ({ onEdit, onDuplicate, onDelete }) => (
     </div>
     <div className="py-1">
       <button
-        onClick={onDelete}
+          onClick={handleDelete}
         className="block w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 text-left"
       >
         Delete
@@ -51,7 +60,7 @@ const CardMenu = ({ onEdit, onDuplicate, onDelete }) => (
     </div>
   </div>
 );
-
+}
 /* ---------------------------- Entity Card ------------------------------- */
 const EntityCard = ({ entity, onView }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -111,7 +120,7 @@ const EntityCard = ({ entity, onView }) => {
             <CardMenu
               onEdit={() => alert("Edit clicked")}
               onDuplicate={() => alert("Duplicate clicked")}
-              onDelete={() => alert("Delete clicked")}
+              entity={entity}
             />
           )}
         </div>

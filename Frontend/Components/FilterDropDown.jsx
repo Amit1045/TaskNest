@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FiFilter, FiX } from "react-icons/fi";
 
-const FilterDropDown = ({ filters, setFilters, clearFilters }) => {
+const FilterDropDown = ({ filters, clearFilters }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -13,20 +13,8 @@ const FilterDropDown = ({ filters, setFilters, clearFilters }) => {
     return () => document.removeEventListener("mousedown", closeOnOutside);
   }, []);
 
-  const handleChange = (type, value) => {
-    setFilters({
-      ...filters,
-      [type]: filters[type].includes(value)
-        ? filters[type].filter((v) => v !== value)
-        : [...filters[type], value],
-    });
-  };
-
   return (
     <div className="relative" ref={ref}>
-     
-
-      
         <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-50">
           <div className="flex justify-between items-center mb-2 border-b pb-2">
             <h3 className="text-gray-700 font-semibold text-sm">Filters</h3>

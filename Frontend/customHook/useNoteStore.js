@@ -12,7 +12,7 @@ export const useNoteStore = create((set) => ({
     fetchNotes: async () => {
         set({ loading: true, error: null })
         try {
-            const res = await fetch("http://localhost:3000/api")
+            const res = await fetch("http://localhost:8000/api")
             const result = await res.json()
             if (result.success === "true") {
                 set({ notes: result.data, loading: false })
@@ -29,7 +29,7 @@ export const useNoteStore = create((set) => ({
             return { success: false, message: "All fields are required!" };
         }
         try {
-            const res = await fetch("http://localhost:3000/api/create", {
+            const res = await fetch("http://localhost:8000/api/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -56,6 +56,24 @@ export const useNoteStore = create((set) => ({
             }
         }
     },
+    DeleteEntity:async (eid)=>{
+        try {
+            const res=await fetch(`http://localhost:8000/api/delete/${eid}`,{
+                method:"DELETE"
+            })
+            if(!res.ok){
+             return {success: false,message:"Failed to delete product"}
+            }
+            set((state) => ({
+                notes: state.notes.filter((note) => note._id !== eid),
+              }));
+              return {success:true,message:"Note Deleted successfully!"}
+
+        } catch (error) {
+            return {success:false,message:error.message}
+        }
+    },
+    
 
    
 }))
