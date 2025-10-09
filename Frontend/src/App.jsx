@@ -5,8 +5,8 @@ import Dashboard from '../Components/Dashboard';
 import ProfilePage from '../Components/ProfilePage';
 import CreateNote from '../Components/CreateNote';
 import SettingsPage from '../Components/SetttingPage';
-import Popup from '../Components/Popup';
-
+import CardSearch from '../Components/DetailedCard';
+import DetailedCard from '../Components/DetailedCard';
 function App() {
 
   return (
@@ -17,7 +17,7 @@ function App() {
       <Route path='/profile' element={<ProfilePage/>} />
       <Route path='/create_note' element={<CreateNote/>} />
       <Route path='/setting' element={<SettingsPage/>} />
-      <Route path='/popup' element={<Popup/>} />
+      <Route path='/card' element={<DetailedCard/>} />
     </Routes>
     </div>
   )

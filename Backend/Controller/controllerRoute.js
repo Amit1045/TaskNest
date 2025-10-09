@@ -99,7 +99,7 @@ export const EditNote = async (req, res) => {
         const UpdateNote = await Notes.findByIdAndUpdate(id, Note, { new: true })
         res.status(201).json({
             success: true,
-            data: UpdateNote
+            message:"Note Updated Successfully"
         })
 
     } catch (error) {

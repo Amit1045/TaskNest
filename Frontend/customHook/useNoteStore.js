@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+const baseUrl="http://localhost:8000/api"
 
 export const useNoteStore = create((set) => ({
     notes: [],
@@ -12,7 +13,7 @@ export const useNoteStore = create((set) => ({
     fetchNotes: async () => {
         set({ loading: true, error: null })
         try {
-            const res = await fetch("http://localhost:8000/api")
+            const res = await fetch(`${baseUrl}`)
             const result = await res.json()
             if (result.success === "true") {
                 set({ notes: result.data, loading: false })
@@ -29,7 +30,7 @@ export const useNoteStore = create((set) => ({
             return { success: false, message: "All fields are required!" };
         }
         try {
-            const res = await fetch("http://localhost:8000/api/create", {
+            const res = await fetch(`${baseUrl}/create`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -56,9 +57,10 @@ export const useNoteStore = create((set) => ({
             }
         }
     },
+
     DeleteEntity:async (eid)=>{
         try {
-            const res=await fetch(`http://localhost:8000/api/delete/${eid}`,{
+            const res=await fetch(`${baseUrl}/delete/${eid}`,{
                 method:"DELETE"
             })
             if(!res.ok){
@@ -73,7 +75,37 @@ export const useNoteStore = create((set) => ({
             return {success:false,message:error.message}
         }
     },
-    
 
-   
+    EditEntity: async (id, updatedData) => {
+        try {
+          const res = await fetch(`http://localhost:8000/api/edit/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData),
+          });
+      
+          const data = await res.json(); // parse JSON from backend
+      
+          if (!res.ok) {
+            // backend returned an error
+            return { success: false, message: data.message || "Failed to update note" };
+          }
+      
+          // update local state
+          set((state) => ({
+            notes: state.notes.map((note) =>
+              note._id === id ? { ...note, ...updatedData } : note
+            ),
+          }));
+      
+          return { success: true, message: "Note updated successfully!" };
+      
+        } catch (error) {
+          console.error(error);
+          return { success: false, message: error.message || "Something went wrong" };
+        }
+      },
+      
+      
+            
 }))
