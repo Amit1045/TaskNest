@@ -67,12 +67,12 @@ const fetchUserData = async () => {
   // Simulate an API call delay
   await new Promise(resolve => setTimeout(resolve, 800));
   return {
-    firstName: 'Jane',
-    lastName: 'Doe',
-    email: 'jane.doe@example.com',
-    phone: '555-123-4567',
-    role: 'Senior Developer',
-    avatarUrl: 'https://placehold.co/150x150/1d4ed8/ffffff?text=JD',
+    firstName: 'Amit',
+    lastName: 'Yadav',
+    email: 'yadav.007@example.com',
+    phone: '555-154-458',
+    role: 'Web-Developer',
+    avatarUrl: 'https://media.licdn.com/dms/image/v2/D4E35AQHhzQClomdYng/profile-framedphoto-shrink_400_400/B4EZij_dYVGYAc-/0/1755097978687?e=1767848400&v=beta&t=HM_WIUBT0NYuXAW6o9fuG6Fv59OoO1rbO1BXGSNDpj0'
   };
 };
 

@@ -9,10 +9,9 @@ import CardSearch from "./DetailedCard.jsx";
 /* ---------------------- Utility: Status Badge Color ---------------------- */
 const getStatusColor = (status) => {
   switch (status?.toLowerCase()) {
-    case "active": return "bg-green-100 text-green-700";
+    case "active":return"bg-yellow-100 text-yellow-700";
     case "pending": return "bg-yellow-100 text-yellow-700";
     case "completed": return "bg-blue-100 text-blue-700";
-    case "archived": return "bg-gray-100 text-gray-600";
     default: return "bg-gray-50 text-gray-700";
   }
 };
@@ -61,7 +60,7 @@ const CardMenu = ({ entity }) => {
 /* ---------------------------- Entity Card ------------------------------- */
 const EntityCard = ({ entity, onView }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [viewFullDetail,setviewFullDetail]=useState(false)
+  const [viewFullDetail, setviewFullDetail] = useState(false)
   const menuRef = useRef(null);
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
 
@@ -75,7 +74,7 @@ const EntityCard = ({ entity, onView }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const statusClasses = getStatusColor(entity.Status);
+  const statusClasses = getStatusColor(entity.status);
 
   return (
     <div className="relative bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300">
@@ -84,16 +83,16 @@ const EntityCard = ({ entity, onView }) => {
           {entity.title || entity.name}
         </h3>
         <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusClasses}`}>
-          {entity.Status}
+          {entity.status}
         </span>
       </div>
 
       <p className="text-gray-500 text-sm mb-4 line-clamp-3">
-        {entity.noteDescription || "No description available"}
+        {entity.description || "No description available"}
       </p>
 
       <div className="flex items-center justify-between text-sm text-gray-400">
-        <span>{new Date(entity.createdAt).toLocaleDateString()}</span>
+        <span>Due Date :{new Date(entity.dueDate).toLocaleDateString()}</span>
         <div className="relative flex items-center space-x-2" ref={menuRef}>
           <button
             onClick={() => setviewFullDetail(!viewFullDetail)}
@@ -102,12 +101,12 @@ const EntityCard = ({ entity, onView }) => {
             <FiEye />
           </button>
           <div className="relative ">
-            {viewFullDetail && 
-            < CardSearch 
-              entity={entity}
-              onClose={() => setviewFullDetail(false)}/>}
+            {viewFullDetail &&
+              < CardSearch
+                entity={entity}
+                onClose={() => setviewFullDetail(false)} />}
           </div>
-          
+
 
           <button
             onClick={toggleMenu}
@@ -125,7 +124,7 @@ const EntityCard = ({ entity, onView }) => {
 
 /* ----------------------------- Filter Options --------------------------- */
 const filterOptions = {
-  status: ["Active", "Pending", "Completed"],
+  status: ["Pending", "Completed"],
   priority: ["Medium", "High", "Very High"],
 };
 
@@ -214,62 +213,63 @@ const Filter = ({ onApply, onClear }) => {
 
 /* ----------------------------- Dashboard ------------------------------- */
 const Dashboard = () => {
- 
-    const { notes, fetchNotes, loading } = useNoteStore();
-    const [showFilter, setShowFilter] = useState(false);
-    const [filteredNotes, setFilteredNotes] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [activeFilters, setActiveFilters] = useState({});
-  
-    useEffect(() => {
-      fetchNotes();
-    }, [fetchNotes]);
-  
-    useEffect(() => {
-      applyAllFilters();
-    }, [notes, searchTerm, activeFilters]);
-  
-    // 🔸 Combine Search + Filters in one function
-    const applyAllFilters = () => {
-      let result = [...notes];
-      // Filter by title (search bar)
-      if (searchTerm.trim()) {
-        result = result.filter((note) =>
-          note.title?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      // Filter by status (from Filter popup)
-      if (activeFilters.status && activeFilters.status.length > 0) {
-        result = result.filter((note) =>
-          activeFilters.status.includes(note.Status)
-        );
-      }
-  
-      // Filter by priority (from Filter popup)
-      if (activeFilters.priority && activeFilters.priority.length > 0) {
-        result = result.filter((note) =>
-          activeFilters.priority.includes(note.priority)
-        );
-      }
-  
-      setFilteredNotes(result);
-    };
-  
-    const handleFilterApply = (filters) => {
-      setActiveFilters(filters);
-      setShowFilter(false);
-    };
-  
-    const handleFilterClear = () => {
-      setActiveFilters({});
-      setShowFilter(false);
-    };
-  
-    const handleView = (id) => alert(`Viewing details for Entity ID: ${id}`);
-  
+
+  const { notes, fetchNotes, loading } = useNoteStore();
+  const [showFilter, setShowFilter] = useState(false);
+  const [filteredNotes, setFilteredNotes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilters, setActiveFilters] = useState({});
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
+
+  useEffect(() => {
+    applyAllFilters();
+  }, [notes, searchTerm, activeFilters]);
+
+  // 🔸 Combine Search + Filters in one function
+  const applyAllFilters = () => {
+    let result = [...notes];
+    // Filter by title (search bar)
+    if (searchTerm.trim()) {
+      result = result.filter((note) =>
+        note.title?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    // Filter by status (from Filter popup)
+    if (activeFilters.status && activeFilters.status.length > 0) {
+      result = result.filter((note) =>
+        activeFilters.status.includes(note.status)
+      );
+    }
+
+    // Filter by priority (from Filter popup)
+    if (activeFilters.priority && activeFilters.priority.length > 0) {
+      result = result.filter((note) =>
+        activeFilters.priority.includes(note.priority)
+      );
+    }
+
+    setFilteredNotes(result);
+  };
+
+  const handleFilterApply = (filters) => {
+    setActiveFilters(filters);
+    setShowFilter(false);
+  };
+
+  const handleFilterClear = () => {
+    setActiveFilters({});
+    setShowFilter(false);
+  };
+
+  const handleView = (id) => alert(`Viewing details for Entity ID: ${id}`);
+
   return (
-    <div className="flex bg-gray-50 min-h-screen">
-      <aside className="w-64 border-r border-gray-200 bg-white shadow-sm">
+    <div className="flex bg-gray-100   min-h-screen">
+      <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+
         <Sidebar />
       </aside>
 
@@ -311,7 +311,7 @@ const Dashboard = () => {
                   <div key={status} className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition">
                     <h4 className="text-gray-500 text-sm">{status} Projects</h4>
                     <p className="text-2xl font-bold text-gray-800 mt-1">
-                      {filteredNotes.filter((n) => n.Status === status).length}
+                      {filteredNotes.filter((n) => n.status === status).length}
                     </p>
                   </div>
                 ))}

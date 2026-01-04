@@ -1,215 +1,252 @@
-import React, { useState } from 'react';
-import { FiSave, FiX, FiCheckCircle, FiTrash2 } from 'react-icons/fi';
-import { Link, useNavigate } from 'react-router-dom';
-import { useNoteStore } from '../customHook/useNoteStore.js';
+import React, { useState } from "react";
+import { FiSave, FiX, FiCheckCircle, FiTrash2 } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";
+import { useNoteStore } from "../customHook/useNoteStore.js";
 
 const initialFormState = {
-    title: '',
-    description: '',
-    status: 'Active',
-    priority: 'medium',
+  title: "",
+  description: "",
+  status: "Pending",
+  priority: "Low",
+  dueDate: "",
 };
 
-
 const CreateNote = () => {
-    const [formData, setFormData] = useState(initialFormState);
-    const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submissionStatus, setSubmissionStatus] = useState(null); // 'success' or 'error'
-    const navigate=useNavigate()
+  const [formData, setFormData] = useState(initialFormState);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState(null);
+
+  const navigate = useNavigate();
   const { createEntity } = useNoteStore();
 
+  /* -------------------- Validation -------------------- */
+  const validateForm = () => {
+    const newErrors = {};
 
-    // --- Client-Side Validation ---
-    const validateForm = () => {
-        const newErrors = {};
-        if (!formData.title.trim()) {
-            newErrors.title = 'Title is required.';
-        } else if (formData.title.length < 5) {
-            newErrors.title = 'Title must be at least 5 characters.';
-        }
-        if (!formData.description.trim()) {
-            newErrors.description = 'Description is required.';
-        }
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required.";
+    } else if (formData.title.length < 5) {
+      newErrors.title = "Title must be at least 5 characters.";
+    }
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required.";
+    }
+    if (!formData.dueDate) {
+      newErrors.dueDate = "Due date is required.";
+    }
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-        // Clear error for the field being edited
-        setErrors(prev => ({ ...prev, [name]: '' }));
-    };
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setSubmissionStatus(null);
+  /* -------------------- Input Change -------------------- */
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
 
-        // 1. Run Client-Side Validation
-        if (!validateForm()) {
-            setSubmissionStatus('error');
-            return;
-        }
-        setIsSubmitting(true);
-        // 2. Submit to (Simulated) Backend
-           const response = await createEntity(formData);
-           
-        // 3. Handle Server Response
-        if (response.success) {
-            setSubmissionStatus('success');
-            setFormData(initialFormState); // Reset form after success
-            setErrors({});
-            
-        } else {
-            setSubmissionStatus('error');
-            // Set error returned from server (for server-side validation)
-            if (response.field) {
-                setErrors(prev => ({ ...prev, [response.field]: response.message }));
-            } else {
-                setErrors({ general: response.message });
-            }
-        }
+  /* -------------------- Submit -------------------- */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmissionStatus(null);
 
-        setIsSubmitting(false);
-    };
+    if (!validateForm()) {
+      setSubmissionStatus("error");
+      return;
+    }
 
-    return (
-        <div className="max-w-4xl mx-auto p-6 mt-4 bg-white rounded-lg shadow-xl">
+    setIsSubmitting(true);
 
-            {/* Page Header */}
-            <h1 className="text-3xl font-bold text-gray-800 border-b pb-4 mb-6">
-                Create New Entity
-            </h1>
+    try {
+      const response = await createEntity(formData);
 
-            {/* Status Messages */}
-            {submissionStatus === 'success' && (
-                <div className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg flex items-center">
-                    <FiCheckCircle className="w-5 h-5 mr-3" />
-                    New Note created successfully! Redirecting to dashboard...
-                </div>
+      if (response.success) {
+        setSubmissionStatus("success");
+        setFormData(initialFormState);
+        setErrors({});
+
+        setTimeout(() => {
+          navigate("/dashboard/entities");
+        }, 1200);
+      } else {
+        setSubmissionStatus("error");
+        setErrors({ general: response.message || "Something went wrong." });
+      }
+    } catch (err) {
+      setSubmissionStatus("error");
+      setErrors({ general: "Server error. Please try again later." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex justify-center py-10 px-4">
+      <div className="relative max-w-4xl w-full bg-white p-8 rounded-2xl shadow-lg">
+
+        {/* Loader Overlay */}
+        {isSubmitting && (
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-2xl z-10">
+            <span className="text-blue-600 font-semibold animate-pulse">
+              Creating note...
+            </span>
+          </div>
+        )}
+
+        {/* Header */}
+        <h1 className="text-3xl font-bold text-gray-800">Create New Note</h1>
+        <p className="text-sm text-gray-500 mb-6">
+          Fill in the details below to create a new note
+        </p>
+
+        {/* Status Messages */}
+        {submissionStatus === "success" && (
+          <div className="flex items-center p-4 mb-4 text-green-700 bg-green-100 rounded-lg">
+            <FiCheckCircle className="mr-3" />
+            Note created successfully! Redirecting...
+          </div>
+        )}
+
+        {submissionStatus === "error" && (
+          <div className="flex items-center p-4 mb-4 text-red-700 bg-red-100 rounded-lg">
+            <FiX className="mr-3" />
+            {errors.general || "Please fix the errors below."}
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* Title */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              className={`mt-1 w-full px-4 py-2 rounded-lg border
+                focus:ring-2 focus:ring-blue-500 outline-none
+                ${errors.title ? "border-red-500" : "border-gray-300 hover:border-gray-400"}
+              `}
+            />
+            {errors.title && (
+              <p className="text-sm text-red-600 mt-1">{errors.title}</p>
             )}
-            {submissionStatus === 'error' && (
-                <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg flex items-center">
-                    <FiX className="w-5 h-5 mr-3" />
-                    Please correct the errors below and try again.
-                    {errors.general && <span className='ml-2 font-medium'>{errors.general}</span>}
-                </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Description <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              rows="5"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              className={`mt-1 w-full px-4 py-2 rounded-lg border
+                focus:ring-2 focus:ring-blue-500 outline-none
+                ${errors.description ? "border-red-500" : "border-gray-300 hover:border-gray-400"}
+              `}
+            />
+            {errors.description && (
+              <p className="text-sm text-red-600 mt-1">{errors.description}</p>
             )}
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-                {/* Title Field */}
-                <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 required-label">
-                        Title
-                    </label>
-                    <input
-                        type="text"
-                        id="title"
-                        name="title"
-                        value={formData.title}
-                        onChange={handleChange}
-                        className={`mt-1 block w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ${errors.title ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {/* Validation Message */}
-                    {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
-                </div>
-
-                {/* Description Field */}
-                <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 required-label">
-                        Description
-                    </label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        rows="5"
-                        value={formData.description}
-                        onChange={handleChange}
-                        className={`mt-1 block w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
-                    />
-                    {/* Validation Message */}
-                    {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
-                </div>
-
-                {/* Status and priority Selectors */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Status */}
-                    <div>
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                            Initial Status
-                        </label>
-                        <select
-                            id="status"
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                        >
-                            <option value="Active">Active</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </div>
-
-                    {/* priority */}
-                    <div>
-                        <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
-                            Priority
-                        </label>
-                        <select
-                            id="priority"
-                            name="priority"
-                            value={formData.priority}
-                            onChange={handleChange}
-                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                        >
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
-                            <option value="Very High">Very High</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex justify-end space-x-4 pt-4 border-t border-gray-100">
-
-                    <Link
-                        to="/dashboard/entities"
-                        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition duration-150"
-                    >
-                        <FiX className="w-4 h-4 mr-2" />
-                        Cancel
-                    </Link>
+          </div>
+          {/* Due Date */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 ">
+              Due Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              name="dueDate"
+              value={formData.dueDate}
+              onChange={handleChange}
+              className={`mt-1 w-full px-4 py-2 rounded-lg border cursor-pointer focus:ring-2 focus:ring-blue-500 outline-none
+                ${errors.dueDate ? "border-red-500" : "border-gray-300 hover:border-gray-400"}
+                    `}
+            />
+            {errors.dueDate && (
+              <p className="text-sm text-red-600 mt-1">{errors.dueDate}</p>
+            )}
+          </div>
 
 
-                    <button
-                        type="button"
-                        onClick={() => setFormData(initialFormState)}
-                        className="flex items-center px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-300 rounded-lg shadow-sm hover:bg-red-100 transition duration-150"
-                        disabled={isSubmitting}
-                    >
-                        <FiTrash2 className="w-4 h-4 mr-2" />
-                        Clear Form
-                    </button>
+          {/* Status & Priority */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Status
+              </label>
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="mt-1 w-full cursor-pointer px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+              >
+                <option>Pending</option>
+                <option>Completed</option>
+              </select>
+            </div>
 
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className={`flex items-center px-6 py-2 text-sm font-semibold text-white rounded-lg shadow-md transition duration-150 
-              ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}
-            `}
-                    >
-                        <FiSave className="w-4 h-4 mr-2" />
-                        {isSubmitting ? 'Creating...' : 'Create Note'}
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Priority
+              </label>
+              <select
+                name="priority"
+                value={formData.priority}
+                onChange={handleChange}
+                className={`mt-1 w-full px-3 py-2 rounded-lg border focus:ring-2 cursor-pointer
+                  ${formData.priority === "Low" && "border-gray-400"}
+                  ${formData.priority === "Medium" && "border-orange-300"}
+                  ${formData.priority === "High" && "border-red-600"}
+                `}
+              >
+                <option>Low</option>
+                <option>Medium</option>
+                <option>High</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t">
+            <Link
+              to="/dashboard/entities"
+              className="flex items-center cursor-pointer justify-center px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
+            >
+              <FiX className="mr-2" /> Cancel
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setFormData(initialFormState)}
+              className="flex items-center cursor-pointer justify-center px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
+            >
+              <FiTrash2 className="mr-2" /> Clear
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex items-center cursor-pointer justify-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <FiSave className="mr-2" />
+              Create Note
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 export default CreateNote;
