@@ -4,36 +4,58 @@ import User from '../model/usermodel.js';
 import Notes from "../model/NoteModel.js";
 import mongoose from "mongoose";
 
+
 export const SignUpRoute = async (req, res) => {
-
     try {
+        const { firstname, lastname, email, password } = req.body;
 
-        const { fullname, email, password } = req.body
-        if (!fullname || !email || !password) {
-            res.status(400).json({ message: 'All field must filled' });
+        // ✅ Validation
+        if (!firstname || !lastname || !email || !password) {
+            return res.status(400).json({
+                message: "All fields are required",
+            });
         }
-        if (password.length <= 6) {
-            res.status(400).json({ message: 'Password must be at least 6 digit ' });
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                message: "Password must be at least 6 characters",
+            });
         }
+
+        // ✅ Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({
+                message: "User already exists with this email",
+            });
+        }
+
+        // ✅ Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // ✅ Create user
         const newUser = new User({
-            fullname,
+            firstname,
+            lastname,
             email,
-            password: hashedPassword
+            password: hashedPassword,
         });
 
         await newUser.save();
-        res.status(201).json({ message: "User registered successfully" });
+
+        res.status(201).json({
+            message: "User registered successfully",
+        });
 
     } catch (error) {
-        res.status(500).json({ error: error.message });
-        console.log('Internal server error');
-
+        console.error("🔥 MONGO ERROR:", error);
+        return res.status(500).json({
+            message: error.message,
+        });
     }
 
-}
+};
 
 export const LoginRoute = async (req, res) => {
     const { email, password } = req.body
@@ -53,11 +75,18 @@ export const LoginRoute = async (req, res) => {
             email: user.email
         },
         process.env.JWT_SECRET,
-
         { expiresIn: "8h" }
     );
 
-    res.json({ token });
+    res.json({
+        token,
+        user: {
+            id: user._id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email,
+        },
+    });
 
 }
 
@@ -73,22 +102,45 @@ export const getNotes = async (req, res) => {
         console.log("Internal server Error");
     }
 }
-
 export const CreateNote = async (req, res) => {
     try {
-        const Note = req.body
-        if (!Note.title || !Note.noteDescription || !Note.Status || !Note.priority) {
-            req.status(401).json({ message: "All field must filled !!" })
-        }
-        const NewNote = await Notes(Note)
-        await NewNote.save()
-        res.status(201).json({ success: true, data: NewNote })
+      const { title, description, status, priority, dueDate } = req.body
+      if (!title || !description || !status || !priority || !dueDate) {
+        return res.status(400).json({
+          success: false,
+          message: "All fields must be filled!"
+        });
+      }
+      if (new Date(dueDate) < new Date()) {
+        return res.status(400).json({
+          message: "Due date cannot be in the past"
+        });
+      }
+      
+      const newNote = new Notes({
+        title,
+        description,
+        status,
+        priority,
+        dueDate
+      });
+  
+      await newNote.save();
+  
+      res.status(201).json({
+        success: true,
+        data: newNote
+      });
+  
     } catch (error) {
-        res.status(500).json({ message: error.message })
-        console.log('Internal server error ');
+      console.error("Internal server error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
     }
-}
-
+  };
+  
 export const EditNote = async (req, res) => {
     try {
         const { id } = req.params
@@ -99,7 +151,7 @@ export const EditNote = async (req, res) => {
         const UpdateNote = await Notes.findByIdAndUpdate(id, Note, { new: true })
         res.status(201).json({
             success: true,
-            message:"Note Updated Successfully"
+            message: "Note Updated Successfully"
         })
 
     } catch (error) {
@@ -122,24 +174,24 @@ export const DeleteNote = async (req, res) => {
     }
 }
 
-export const SearchNote = async (req, res)=> {
+export const SearchNote = async (req, res) => {
     const { title } = req.query
     try {
         if (!title) {
             return res.status(400).json({ message: "Please provide a title to search" });
-          }
+        }
 
-          const Note = await Notes.find({
+        const Note = await Notes.find({
             title: { $regex: title, $options: "i" } // "i" for case-insensitive
-          });
-      
-          if (Note.length === 0) {
+        });
+
+        if (Note.length === 0) {
             return res.status(404).json({ message: "No Note Found" });
-          }
-          res.status(200).json(Note);
-        
+        }
+        res.status(200).json(Note);
+
     } catch (error) {
-        res.status(500).json({message:error.message})
-        console.log('Internal server error Search ');       
+        res.status(500).json({ message: error.message })
+        console.log('Internal server error Search ');
     }
 }

@@ -5,19 +5,24 @@ const NotesSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    Status: {
+    status: {
         type: String,
-        enum: ["Active","Pending" ,"Completed"],
-        default: "Active",
-       
+        enum: ["Pending", "Completed"],
+        default: "Pending",
+
     },
     priority: {
         type: String,
-        enum: ["High", "Medium", "Very High"],
-        default: "Medium",
-     
+        enum: ["Low", "Medium", "High"],
+        default: "Low",
+
     },
-    noteDescription: {
+     dueDate: {
+        type: Date,
+        required: true
+    },
+
+    description: {
         type: String,
         required: true
     },
@@ -27,5 +32,5 @@ const NotesSchema = new mongoose.Schema({
     }
 )
 
-const Notes=mongoose.model("Notes",NotesSchema)
+const Notes = mongoose.model("Notes", NotesSchema)
 export default Notes
